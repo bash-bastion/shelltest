@@ -1,4 +1,4 @@
-# shellcheck shell=sh
+#!/usr/bin/env sh
 
 __shtest_util_exec_fn() {
 	unset REPLY; REPLY=
