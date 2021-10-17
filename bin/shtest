@@ -33,24 +33,24 @@ Flags:
 		;;
 	esac done
 
-	export TEST_DIR= TEST_FILE= TEST_FUNCTION= TEST_SHELL= SHTEST='yes'
+	export SHTEST_DIR= SHTEST_FILE= SHTEST_FUNCTION= SHTEST_SHELL= SHTEST='yes'
 
-	# for TEST_DIR; do
+	# for SHTEST_DIR; do
 
-	TEST_DIR="$1"; shift
-	if [ -z "$TEST_DIR" ]; then
+	SHTEST_DIR="$1"; shift
+	if [ -z "$SHTEST_DIR" ]; then
 		printf '%s\n' "Error: shtest: No test directory passed"
 		exit 1
-	elif [ -f "$TEST_DIR" ]; then
-		printf '%s\n' "Error: shtest: Expected a directory, not file '$TEST_DIR'"
+	elif [ -f "$SHTEST_DIR" ]; then
+		printf '%s\n' "Error: shtest: Expected a directory, not file '$SHTEST_DIR'"
 		exit 1
-	elif [ ! -d "$TEST_DIR" ]; then
-		printf '%s\n' "Error: shtest: Cannot find directory at '$TEST_DIR'"
+	elif [ ! -d "$SHTEST_DIR" ]; then
+		printf '%s\n' "Error: shtest: Cannot find directory at '$SHTEST_DIR'"
 		exit 1
 	fi
 
-	if ! TEST_DIR="$(
-		if ! CDPATH= cd -P "$TEST_DIR"; then
+	if ! SHTEST_DIR="$(
+		if ! CDPATH= cd -P "$SHTEST_DIR"; then
 			exit 1
 		fi
 		if ! pwd; then
@@ -60,7 +60,7 @@ Flags:
 		printf '%s\n' "Error: shtest: Could not convert test directory to full path"
 	fi
 
-	for TEST_FILE in "$TEST_DIR"/*.sh; do
+	for SHTEST_FILE in "$SHTEST_DIR"/*.sh; do
 		__shtest_functions_length=0
 		__shtest_functions=
 
@@ -85,11 +85,11 @@ Flags:
 
 			__shtest_functions_length=$((__shtest_functions_length+1))
 			__shtest_functions="$__shtest_functions$test_function:"
-		done < "$TEST_FILE"; unset test_function
+		done < "$SHTEST_FILE"; unset test_function
 
 		# Execute all testing functions in current file
-		if ! . "$TEST_FILE"; then
-			printf '%s\n' "Error: shtest: Failed to source file '$TEST_FILE'"
+		if ! . "$SHTEST_FILE"; then
+			printf '%s\n' "Error: shtest: Failed to source file '$SHTEST_FILE'"
 			exit 1
 		fi
 
@@ -99,15 +99,15 @@ Flags:
 
 		__shtest_function_i=1
 		while [ -n "$__shtest_functions" ]; do
-			TEST_FUNCTION="${__shtest_functions%%:*}"
+			SHTEST_FUNCTION="${__shtest_functions%%:*}"
 
 			__shtest_util_exec_fn 'setup'
 
-			__shtest_util_exec_fn "$TEST_FUNCTION"
+			__shtest_util_exec_fn "$SHTEST_FUNCTION"
 			if [ $REPLY -eq 0 ]; then
-				printf '%s\n' "ok $__shtest_function_i $TEST_FUNCTION"
+				printf '%s\n' "ok $__shtest_function_i $SHTEST_FUNCTION"
 			else
-				printf '%s\n' "not ok $__shtest_function_i $TEST_FUNCTION"
+				printf '%s\n' "not ok $__shtest_function_i $SHTEST_FUNCTION"
 			fi
 
 			__shtest_util_exec_fn 'teardown'
@@ -118,7 +118,7 @@ Flags:
 		unset __shtest_function_i
 
 		__shtest_util_exec_fn 'teardown_file'
-	done; unset TEST_FILE
+	done; unset SHTEST_FILE
 
 	unset __shtest_functions_length __shtest_functions
 

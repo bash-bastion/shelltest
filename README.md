@@ -16,19 +16,19 @@ POSIX shell test runner
 
 ## Reference
 
-### `TEST_DIR`
+### `SHTEST_DIR`
 
 Absolute path of the directory specified on the command line
 
-### `TEST_FILE`
+### `SHTEST_FILE`
 
 Absolute path of the currently running test file
 
-### `TEST_FUNCTION`
+### `SHTEST_FUNCTION`
 
 Name of the function currently being tested
 
-### `TEST_SHELL`
+### `SHTEST_SHELL`
 
 Name of the current shell. (It is recommended to use this instead of `$SHELL`)
 
