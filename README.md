@@ -18,11 +18,19 @@ POSIX shell test runner
 
 ### `TEST_DIR`
 
+Absolute path of the directory specified on the command line
+
 ### `TEST_FILE`
+
+Absolute path of the currently running test file
 
 ### `TEST_FUNCTION`
 
+Name of the function currently being tested
+
 ### `TEST_SHELL`
+
+Name of the current shell. (It is recommended to use this instead of `$SHELL`)
 
 ## Tested on...
 
@@ -36,3 +44,9 @@ POSIX shell test runner
 More rigorous test suite coming soon...
 
 ## Installation
+
+Use [Basalt](https://github.com/hyperupcall/basalt), a Bash package manager, to install this project globally
+
+```sh
+basalt global add hyperupcall/shtest
+```
