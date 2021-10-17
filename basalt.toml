@@ -1,0 +1,20 @@
+[package]
+name = 'shtest'
+slug = 'shtest'
+version = ''
+authors = ['Edwin Kofler <edwin@kofler.dev>']
+description = ''
+
+[run]
+dependencies = []
+sourceDirs = []
+builtinDirs = []
+binDirs = ['bin']
+completionDirs = []
+manDirs = []
+
+[run.shellEnvironment]
+
+[run.setOptions]
+
+[run.shoptOptions]

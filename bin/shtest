@@ -1,0 +1,115 @@
+# shellcheck shell=sh
+
+main() {
+	for arg; do case "$arg" in
+	-h|--help)
+		printf '%s\n' "shtest - A POSIX shell test runner
+
+		Usage:
+		    shtest <test-dir>
+
+		-h|--help
+		    Show help menu"
+		return
+		;;
+	esac done
+
+	export TEST_DIR= TEST_FILE= TEST_FUNCTION= TEST_SHELL= SHTEST='yes'
+	TEST_DIR="$1"; shift
+	if ! TEST_DIR="$(
+		if ! CDPATH= cd -P "$TEST_DIR"; then
+			exit 1
+		fi
+		if ! pwd; then
+			exit 1
+		fi
+	)"; then
+		printf '%s\n' "Error: shtest: Could not convert test directory to full path"
+	fi
+
+	if [ -f "$TEST_DIR" ]; then
+		printf '%s\n' "Error: shtest: Expected a directory, not file '$TEST_DIR'"
+		exit 1
+	elif [ ! -d "$TEST_DIR" ]; then
+		printf '%s\n' "Error: shtest: Cannot find directory at '$TEST_DIR'"
+		exit 1
+	fi
+
+	for TEST_FILE in "$TEST_DIR"/*.sh; do
+		__shtest_functions_length=0
+		__shtest_functions=
+
+		# Parse shell script, adding testing functions to the list
+		while IFS= read -r test_function; do
+			# Functions part of the test suite must have a name that starts with 'test_'
+			case "$test_function" in
+				'test_'*'() {'*) : ;;
+				*) continue ;;
+			esac
+
+			# This works on the assumption that there are no whitespace characters before
+			# the function identifier. Additionally, this strips comments after the function,
+			# which prevents "ignoring comment lines" in cases where tests are like Bats
+			test_function="${test_function%%"() {"*}"
+
+			# Ignore comment lines
+			case "$test_function" in
+				*'#'*) continue ;;
+				*) : ;;
+			esac
+
+			__shtest_functions_length=$((__shtest_functions_length+1))
+			__shtest_functions="$__shtest_functions$test_function:"
+		done < "$TEST_FILE"; unset test_function
+
+		# Execute all testing functions in current file
+		if ! . "$TEST_FILE"; then
+			printf '%s\n' "Error: shtest: Failed to source file '$TEST_FILE'"
+			exit 1
+		fi
+
+		printf '%d..%d\n' '1' "$__shtest_functions_length"
+
+		if PATH= command -v setup_file >/dev/null 2>&1; then
+			setup_file
+		fi
+
+		__shtest_function_i=1
+		while [ -n "$__shtest_functions" ]; do
+			TEST_FUNCTION="${__shtest_functions%%:*}"
+
+			if PATH= command -v setup >/dev/null 2>&1; then
+				setup
+			fi
+
+			__shtest_function_output="$(SHTEST='yes' "$TEST_FUNCTION" 2>&1)"
+			__shtest_function_exitcode=$?
+			printf '%s\n' "$__shtest_function_output" | while IFS= read -r line; do
+				printf '# %s\n' "$line"
+			done; unset line
+
+			if [ $__shtest_function_exitcode -eq 0 ]; then
+				printf '%s\n' "ok $__shtest_function_i $TEST_FUNCTION"
+			else
+				printf '%s\n' "not ok $__shtest_function_i $TEST_FUNCTION"
+			fi
+			unset __shtest_function_output __shtest_function_exitcode
+
+			if PATH= command -v teardown >/dev/null 2>&1; then
+				teardown
+			fi
+
+			__shtest_function_i=$((__shtest_function_i=__shtest_function_i+1))
+			__shtest_functions="${__shtest_functions#*:}"
+		done
+
+		if PATH= command -v teardown_file >/dev/null 2>&1; then
+			teardown_file
+		fi
+	done; unset TEST_FILE
+
+	unset __shtest_function_i __shtest_functions
+}
+
+
+LC_ALL=C main "$@"
