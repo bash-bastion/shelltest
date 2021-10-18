@@ -1,18 +1,24 @@
 # shellcheck shell=bash
 
-eval "$(basalt-package-init)"
-basalt.package-init
-basalt.package-load
-# basalt.load 'github.com/hyperupcall/bats-common-utils' 'load.bash'
+if [ "$SHTEST" = yes ]; then
+	# TODO: self-host tests
+	:
+else
+	shtest="$BATS_TEST_DIRNAME"/../bin/shtest
 
-load './util/test_util.sh'
 
-export NO_COLOR=
+	load './util/test_util.sh'
+fi
+
 
 setup() {
-	ensure.cd "$BATS_TEST_TMPDIR"
+	if ! cd "$BATS_TEST_TMPDIR"; then
+		return 1
+	fi
 }
 
 teardown() {
-	ensure.cd "$BATS_SUITE_TMPDIR"
+	if ! cd "$BATS_SUITE_TMPDIR"; then
+		return 1
+	fi
 }

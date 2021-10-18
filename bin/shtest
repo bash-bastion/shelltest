@@ -1,14 +1,21 @@
 #!/usr/bin/env sh
 
+assert() {
+	if "$@"; then :; else
+		printf '%s\n' "Error: shtest: Execution of command '$*' failed with exitcode $?"
+		return 1
+	fi
+}
+
 __shtest_util_exec_fn() {
 	unset REPLY; REPLY=
-	__shtest_function_name="$1"
+	__shtest_function_name="${1:-}"
 
 	if PATH= command -v "$__shtest_function_name" >/dev/null 2>&1; then
 		if __shtest_function_output="$("$__shtest_function_name" 2>&1)"; then
-			__shtest_function_exitcode="$?"
+			__shtest_function_exitcode=$?
 		else
-			__shtest_function_exitcode="$?"
+			__shtest_function_exitcode=$?
 		fi
 
 		printf '%s\n' "$__shtest_function_output" | while IFS= read -r __shtest_line; do
@@ -33,7 +40,7 @@ Flags:
 		;;
 	esac done
 
-	export SHTEST_DIR= SHTEST_FILE= SHTEST_FUNCTION= SHTEST_SHELL= SHTEST='yes'
+	export SHTEST_DIR= SHTEST_FILE= SHTEST_FUNCTION= SHTEST_SHELL=
 
 	# for SHTEST_DIR; do
 

@@ -6,7 +6,7 @@ authors = ['Edwin Kofler <edwin@kofler.dev>']
 description = ''
 
 [run]
-dependencies = []
+dependencies = ['https://github.com/hyperupcall/bats-common-utils.git@v3.0.1']
 sourceDirs = []
 builtinDirs = []
 binDirs = ['bin']
