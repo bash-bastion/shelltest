@@ -1,6 +1,6 @@
 [package]
-name = 'shtest'
-slug = 'shtest'
+name = 'shelltest'
+slug = 'shelltest'
 version = ''
 authors = ['Edwin Kofler <edwin@kofler.dev>']
 description = ''
