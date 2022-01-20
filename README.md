@@ -1,4 +1,4 @@
-# shtest
+# shelltest
 
 A sort of [Bats](https://github.com/bats-core/bats-core)-lite for POSIX shell scripts
 
@@ -46,16 +46,16 @@ More rigorous test suite coming soon...
 Use [Basalt](https://github.com/hyperupcall/basalt), a Bash package manager, to install this project globally
 
 ```sh
-basalt global add hyperupcall/shtest
+basalt global add hyperupcall/shelltest
 ```
 
 ## Usage
 
 ```sh
-$ bash shtest './path/to/testing/directory'
+$ bash shelltest './path/to/testing/directory'
 ...
-$ sh shtest './path/to/testing/directory'
+$ sh shelltest './path/to/testing/directory'
 ...
-$ zsh shtest './path/to/testing/directory'
+$ zsh shelltest './path/to/testing/directory'
 ...
 ```
