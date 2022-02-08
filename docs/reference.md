@@ -20,6 +20,10 @@ Name of the current shell. (It is recommended to use this instead of `$SHELL`). 
 
 Name of the current executing function
 
+## `SHELLTEST_SHELL`
+
+Name of the current shell
+
 ## Functions
 
 The following functions are set

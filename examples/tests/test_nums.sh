@@ -1,5 +1,5 @@
 # shellcheck shell=sh
-source './examples/lib.sh'
+. './examples/lib.sh'
 
 util_print() {
 	printf '%b' "$1"
