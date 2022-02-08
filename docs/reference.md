@@ -4,23 +4,29 @@
 
 The following environment variables are set
 
-### `SHTEST`
+### `SHELLTEST`
 
 Set when `shtest` is running
 
-### `SHTEST_DIR`
+### `SHELLTEST_DIR`
 
 Absolute path of the directory containing the currently running testfile
 
-### `SHTEST_SHELL`
+### `SHELLTEST_SHELL`
 
 Name of the current shell. (It is recommended to use this instead of `$SHELL`). Not yet implemented
+
+### `SHELLTEST_FUNC`
+
+Name of the current executing function
 
 ## Functions
 
 The following functions are set
 
 ### `assert`
+
+Prints a pretty error on a failed assertion
 
 ### `setup_file`
 

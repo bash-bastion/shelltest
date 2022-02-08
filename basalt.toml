@@ -1,12 +1,12 @@
 [package]
 name = 'shelltest'
 slug = 'shelltest'
-version = ''
+version = 'v0.1.0'
 authors = ['Edwin Kofler <edwin@kofler.dev>']
-description = ''
+description = 'A POSIX test runner'
 
 [run]
-dependencies = ['https://github.com/hyperupcall/bats-common-utils.git@v3.0.1']
+dependencies = ['https://github.com/hyperupcall/bats-all.git@v4.3.0']
 sourceDirs = []
 builtinDirs = []
 binDirs = ['bin']

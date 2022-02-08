@@ -200,6 +200,7 @@ __shtest_run_file() {
 __shtest_main() {
 	__shtest_flag_formatter='default'
 
+	local arg=
 	for arg; do case $arg in
 	-h|--help)
 		__shtest_util_print_help
@@ -217,10 +218,10 @@ __shtest_main() {
 			__shtest_util_die "Shift failed"
 		fi
 		;;
-	esac done
+	esac done; unset -v arg
 
 	# Validate arguments
-	if [ "$#" -eq 0 ]; then
+	if [ $# -eq 0 ]; then
 		__shtest_util_print_help
 		__shtest_util_die "Must specify least one file or directory"
 	fi
@@ -246,6 +247,7 @@ __shtest_main() {
 		__shtest_run_file "$__shtest_arg"
 	elif [ -d "$__shtest_arg" ]; then
 		__shtest_arg="${__shtest_arg%/}"
+		local __shtest_file=
 		for __shtest_file in "$__shtest_arg"/*.sh; do
 			if [ "$__shtest_file" = "$__shtest_arg/*.sh" ]; then
 				__shtest_util_die "Directory '$__shtest_arg' does not contain any test files"
