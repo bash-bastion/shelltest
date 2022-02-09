@@ -11,7 +11,7 @@ export SHELLTEST= SHELLTEST_DIR= SHELLTEST_FILE= SHELLTEST_FUNC=
 # @description Run command and print information if failure occurs
 assert() {
 	if "$@"; then :; else
-		printf '\e[41m%s\e[0m\n: %s' "Error" "Execution of command '$*' failed with exitcode $?" >&2
+		printf '\033[41m%s\033[0m\n: %s' "Error" "Execution of command '$*' failed with exitcode $?" >&2
 		return 1
 	fi
 }
@@ -34,7 +34,7 @@ version() {
 # @description Prints message to standard output and dies
 # @internal
 __shtest_util_die() {
-	printf '\e[41m\e[1m%s\e[0m %s\n' ' Error ' "$1" >&2
+	printf '\033[41m\033[1m%s\033[0m %s\n' ' Error ' "$1" >&2
 	exit 1
 }
 
@@ -98,7 +98,7 @@ __shtest_util_exec_test_fn() {
 		fi
 	else
 		if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
-			printf '\e[0;31m\e[1m ✗ %s\e[0m\n' "$__shtest_function_name"
+			printf '\033[0;31m\033[1m ✗ %s\033[0m\n' "$__shtest_function_name"
 
 			# printf '%s\n' '--- OUTPUT ---'
 			# printf '%s\n' "$__shtest_function_output"
@@ -142,7 +142,7 @@ __shtest_run_file() {
 
 	# Skip if there are no tests
 	if [ "$__shtest_functions_length" -eq 0 ]; then
-		printf '\e[44m\e[1m%s\e[0m \e[1m%s\e[0m\n' ' FILE ' "$__shtest_filename (skipped)"
+		printf '\033[44m\033[1m%s\033[0m \033[1m%s\033[0m\n' ' FILE ' "$__shtest_filename (skipped)"
 		return
 	fi
 
@@ -150,9 +150,9 @@ __shtest_run_file() {
 	. "$__shtest_filename"
 
 	if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
-		# printf '\e[38;2;%d;%d;%dm%s\e[0m\n' 0 0 0 "BLACK"
-		# printf '\e[0;30m\e[47m\e[1m%s\e[0m \e[1m%s\e[0m\n' ' FILE ' "$__shtest_filename"
-		printf '=> \e[4;37mRUNNING\e[0m %s\n' "\"$__shtest_filename\"" # TODO
+		# printf '\033[38;2;%d;%d;%dm%s\033[0m\n' 0 0 0 "BLACK"
+		# printf '\033[0;30m\033[47m\033[1m%s\033[0m \033[1m%s\033[0m\n' ' FILE ' "$__shtest_filename"
+		printf '=> \033[4;37mRUNNING\033[0m %s\n' "\"$__shtest_filename\"" # TODO
 	elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
 		printf '%d..%d\n' '1' "$__shtest_functions_length"
 	fi

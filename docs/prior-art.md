@@ -3,8 +3,10 @@
 - [assert.sh](https://github.com/lehmannro/assert.sh/blob/master/assert.sh) (Bash only)
 - [shunit2](https://github.com/kward/shunit2)
 - [shellspec](https://github.com/shellspec/shellspec)
+  - Too verbose for my tastes
 - [shspec](https://github.com/rylnd/shpec)
 - [urchin](https://github.com/tlevine/urchin)
+  - Shells out too often
 - [ts](https://github.com/thinkerbot/ts)
 - [critic.sh](https://github.com/Checksum/critic.sh) (Bash only)
 
