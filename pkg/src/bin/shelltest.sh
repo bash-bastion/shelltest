@@ -26,8 +26,7 @@ t_get_version() {
 		nsh) REPLY=$(nsh --version) ;;
 		bash) REPLY=$BASH_VERSION ;;
 		zsh) REPLY=$ZSH_VERSION ;;
-		ksh|mksh|oksh|loksh) REPLY=$KSH_VERSION ;;
-		posh) REPLY=$POSH_VERSION
+		ksh|mksh|oksh|loksh) REPLY=$KSH_VERSION
 	esac
 }
 
