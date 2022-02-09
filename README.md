@@ -10,6 +10,7 @@ A sort of [Bats](https://github.com/bats-core/bats-core)-lite for POSIX shell sc
 - Perform tests with `[`, etc.
 - TAPS output
 - `setup`, `setup_file`, `teardown`, `teardown_file`
+- Utility functions `t_is_function`, `t_get_shell_version`, `t_assert`
 
 ## Tested on...
 
@@ -51,10 +52,5 @@ basalt global add hyperupcall/shelltest
 ## Usage
 
 ```sh
-$ bash shelltest './path/to/testing/directory'
-...
-$ sh shelltest './path/to/testing/directory'
-...
-$ zsh shelltest './path/to/testing/directory'
-...
+$ shelltest ./tests
 ```
