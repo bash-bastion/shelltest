@@ -1,6 +1,6 @@
 # shelltest
 
-A sort of [Bats](https://github.com/bats-core/bats-core)-lite for POSIX shell scripts
+A test runner for POSIX shells
 
 ## Features
 
