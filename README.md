@@ -27,7 +27,6 @@ A sort of [Bats](https://github.com/bats-core/bats-core)-lite for POSIX shell sc
 - [ ] mksh (MirBSD fork of OpenBSD pdksh)
 - [ ] loksh (Linux port of OpenBSD pdksh)
 - [ ] oksh (General port of OpenBSD pdksh)
-- [ ] posh (Based on pdksh)
 
 ## Not supported
 

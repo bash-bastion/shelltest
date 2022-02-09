@@ -44,8 +44,12 @@ _run() {
 	if [ -z "$_shell_abs" ]; then
 		printf '%s\n' "Skipping '$_shell_rel' (not installed)"
 	else
-		printf '%s\n' "Running with '$_shell_rel' ($_shell_abs)"
+		# TODO: send 'USR1' to this process from the child launched below only at the end of
+		# execution. If we don't get the signal it means that the child terminated prematuraly (set -e), and
+		# we can display an error from this side
+		printf '%s\n' "--- $_shell_rel ($_shell_abs) ---"
 		SHELLTEST_INTERNAL_SHELL=$_s \
+		SHELLTEST_INTERNAL_SHELL_ABS=$_shell_abs \
 		SHELLTEST_INTERNAL_FORMATTER=$_flag_formatter \
 			"$_shell_abs" "$BASALT_PACKAGE_DIR/pkg/src/bin/shelltest.sh" "$@"
 	fi
@@ -105,7 +109,7 @@ __main_shelltestw() {
 	done
 
 	# ksh
-	for _s in ksh mksh oksh loksh posh; do
+	for _s in ksh mksh oksh loksh; do
 		if _should_run; then
 			_shell_rel=$_s
 			_shell_abs=$(_get_tabs)
