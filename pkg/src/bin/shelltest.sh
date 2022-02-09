@@ -32,7 +32,7 @@ t_get_version() {
 }
 
 # @description Run command and print information if failure occurs
-assert() {
+t_assert() {
 	if "$@"; then :; else
 		printf '\033[41m%s\033[0m\n: %s' "Error" "Execution of command '$*' failed with exitcode $?" >&2
 		return 1
