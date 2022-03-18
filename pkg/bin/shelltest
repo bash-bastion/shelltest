@@ -1,8 +1,8 @@
 # shellcheck shell=sh
 
 eval "$(basalt-package-init)" || exit
-basalt.package-init
+basalt.package-init || exit
 basalt.package-load
 
-. "$BASALT_PACKAGE_DIR/pkg/src/bin/shelltestw.sh"
-__main_shelltestw "$@"
+. "$BASALT_PACKAGE_DIR/pkg/src/bin/shelltest.sh"
+__main_shelltest "$@"

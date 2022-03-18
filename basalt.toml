@@ -1,20 +1,24 @@
 [package]
+type = 'bash'
 name = 'shelltest'
 slug = 'shelltest'
 version = 'v0.1.0'
 authors = ['Edwin Kofler <edwin@kofler.dev>']
-description = 'A POSIX test runner'
+description = 'A test runner for POSIX-compliant shells'
 
 [run]
 dependencies = ['https://github.com/hyperupcall/bats-all.git@v4.3.0']
-sourceDirs = []
+sourceDirs = ['pkg/src/util']
 builtinDirs = []
-binDirs = ['bin']
+binDirs = ['pkg/bin']
 completionDirs = []
 manDirs = []
 
 [run.shellEnvironment]
 
 [run.setOptions]
+errexit = 'on'
+pipefail = 'on'
 
 [run.shoptOptions]
+shift_verbose = 'on'

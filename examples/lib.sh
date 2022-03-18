@@ -6,22 +6,22 @@ return_n() {
 
 add_nums() {
 	unset -v REPLY
-	REPLY="$(printf '%s\n' "$1 + $2" | bc)"
+	REPLY=$(printf '%s\n' "$1 + $2" | bc)
 }
 
 subtract_nums() {
 	unset -v REPLY
-	REPLY="$(printf '%s\n' "$1 - $2" | bc)"
+	REPLY=$(printf '%s\n' "$1 - $2" | bc)
 }
 
 multiply_nums() {
 	unset -v REPLY
-	REPLY="$(printf '%s\n' "$1 * $2" | bc)"
+	REPLY=$(printf '%s\n' "$1 * $2" | bc)
 }
 
 divide_nums() {
 	unset -v REPLY
-	REPLY="$(printf '%s\n' "$1 / $2" | bc)"
+	REPLY=$(printf '%s\n' "$1 / $2" | bc)
 }
 
 str_append() {
