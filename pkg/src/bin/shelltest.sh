@@ -1,9 +1,9 @@
-# shellcheck shell=sh
+# shellcheck shell=bash
 
-__main_shelltest() {
-	_flag_shells='all'
-	_flag_formatter='default'
-	_arg_dirs=
+main.shelltest() {
+	local flag_shells='all'
+	local flag_formatter='default'
+	local arg_dir=
 
 	while [ $# -ne 0 ]; do case $1 in
 	-s|--shells)
@@ -11,8 +11,8 @@ __main_shelltest() {
 			util_die 'Failed shift'
 		fi
 
-		_flag_shells=$1
-		if [ -z "$_flag_shells" ]; then
+		flag_shells=$1
+		if [ -z "$flag_shells" ]; then
 			util_die "A value must be supplied for '--shells'"
 		fi
 
@@ -25,8 +25,8 @@ __main_shelltest() {
 			util_die 'Failed shift'
 		fi
 
-		_flag_formatter=$1
-		if [ -z "$_flag_formatter" ]; then
+		flag_formatter=$1
+		if [ -z "$flag_formatter" ]; then
 			util_die "A value must be supplied for '--formatter'"
 		fi
 
@@ -40,63 +40,59 @@ __main_shelltest() {
 		;;
 	-*) util_die 'Flag not recognized' ;;
 	*)
-		if [ -n "$_arg_dirs" ]; then
+		if [ -n "$arg_dir" ]; then
 			util_die "Cannot supply more than one directory or file"
 		fi
 
-		_arg_dirs="$1"
+		arg_dir=$1
 		if ! shift; then
 			util_die 'Failed shift'
 		fi
 		;;
 	esac done
 
-	if [ "$_flag_formatter" != 'default' ] && [ "$_flag_formatter" != 'tap' ]; then
+	if [ "$flag_formatter" != 'default' ] && [ "$flag_formatter" != 'tap' ]; then
 		util_die "Flag '--formatter' only accepts either 'default' or 'tap'"
 	fi
 
-	if [ -z "$_arg_dirs" ]; then
+	if [ -z "$arg_dir" ]; then
 		util_help
 		util_die "Must specify least one file or directory"
 	fi
+	
+	_shells_total=0
 
-	tmp="$_flag_shells"
-	while [ -n "$tmp" ]; do
-		case ${tmp%%,*} in
+	_temp=$flag_shells
+	while [ -n "$_temp" ]; do
+		case ${_temp%%,*} in
 			all) ;;
 			sh|ash|dash|yash|oil|nash) ;;
 			bash|zsh) ;;
 			ksh|mksh|oksh|loksh) ;;
-			*) util_die "Shell '${tmp%%,*}' is not supported" ;;
+			*) util_die "Shell '${_temp%%,*}' is not supported" ;;
 		esac
 
-		case $tmp in
-			*,*) tmp=${tmp#*,} ;;
-			*) tmp= ;;
+		if util_should_run "$flag_shells" "${_temp%%,*}"; then
+			_shells_total=$((_shells_total+1))
+		fi
+
+		case $_temp in
+			*,*) _temp=${_temp#*,} ;;
+			*) _temp= ;;
 		esac
 	done
 
-	# posix
-	for _shell_rel in sh ash dash yash oil nash; do
-		if util_should_run "$_flag_shells" "$_shell_rel"; then
+	_is_first_run='yes'
+	for _shell_rel in \
+		sh ash dash yash oil nash \
+		bash zsh \
+		ksh mksh oksh loksh
+	do
+		if util_should_run "$flag_shells" "$_shell_rel"; then
 			_shell_abs=$(util_get_abs "$_shell_rel")
-			util_run "$_arg_dirs"
-		fi
-	done
+			util_run "$arg_dir" "$_is_first_run"
 
-	# bash, zsh
-	for _shell_rel in bash zsh; do
-		if util_should_run "$_flag_shells" "$_shell_rel"; then
-			_shell_abs=$(util_get_abs "$_shell_rel")
-			util_run "$_arg_dirs"
-		fi
-	done
-
-	# ksh
-	for _shell_rel in ksh mksh oksh loksh; do
-		if util_should_run "$_flag_shells" "$_shell_rel"; then
-			_shell_abs=$(util_get_abs "$_shell_rel")
-			util_run "$_arg_dirs"
+			_is_first_run='no'
 		fi
 	done
 }

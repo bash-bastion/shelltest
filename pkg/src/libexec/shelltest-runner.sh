@@ -151,7 +151,7 @@ __shtest_util_exec_fn() {
 			if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
 				printf '\033[0;32m\033[1m ✓ %s\033[0m\n' "$__shtest_function_name"
 			elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
-				printf '%s\n' "ok $__shtest_global_current_test $__shtest_function_name"
+				printf '%s\n' "ok $__shtest_global_current_test [$SHELLTEST_INTERNAL_SHELL] $__shtest_function_name"
 			fi
 		else
 			# Do not print information on success if it is not a "test_*" function
@@ -311,34 +311,35 @@ __main_shelltest() {
 		LC_TELEPHONE='C' LC_MEASUREMENT='C' LC_IDENTIFICATION='C' LC_ALL='C'
 	export SHELLTEST= SHELLTEST_DIR= SHELLTEST_FILE= SHELLTEST_FUNC=
 
+	__shtest_arg_path=$1
+	__shtest_arg_first_run=$2
+	
 	# Run tests for either file or directory
-	__shtest_arg=$1
-	if [ -f "$__shtest_arg" ]; then
+	if [ -f "$__shtest_arg_path" ]; then
 		if ! SHELLTEST_DIR=$(
-			if ! CDPATH= cd -P "${__shtest_arg%/*}"; then
+			if ! CDPATH= cd -P "${__shtest_arg_path%/*}"; then
 				exit 1
 			fi
 
 			printf '%s' "$PWD"
 		); then
-			__shtest_util_die "Could not generate absolute path from directory '${__shtest_arg%/*}'"
+			__shtest_util_die "Could not generate absolute path from directory '${__shtest_arg_path%/*}'"
 		fi
-		SHELLTEST_FILE=__shtest_arg
+		SHELLTEST_FILE=__shtest_arg_path
 
-		__shtest_run_file "$__shtest_arg"
-	elif [ -d "$__shtest_arg" ]; then
-		__shtest_arg=${__shtest_arg%/}
+		__shtest_run_file "$__shtest_arg_path"
+	elif [ -d "$__shtest_arg_path" ]; then
+		__shtest_arg_path=${__shtest_arg_path%/}
 		__shtest_file=
 
-		if [ -f "$__shtest_arg/*.sh" ]; then
-			__shtest_util_die "Directory '$__shtest_arg' must not contain a file called '*.sh'"
-		fi
-		
 		# Parse all files and get total number of tests
 		__shtest_global_total_tests='0'
-		for __shtest_file in "$__shtest_arg"/*.sh; do
-			if [ "$__shtest_file" = "$__shtest_arg/*.sh" ]; then
-				__shtest_util_die "Directory '$__shtest_arg' does not contain any test files"
+		if [ -f "$__shtest_arg_path/*.sh" ]; then
+			__shtest_util_die "Directory '$__shtest_arg_path' must not contain a file called '*.sh'"
+		fi
+		for __shtest_file in "$__shtest_arg_path"/*.sh; do
+			if [ "$__shtest_file" = "$__shtest_arg_path/*.sh" ]; then
+				__shtest_util_die "Directory '$__shtest_arg_path' does not contain any test files"
 			fi
 
 			__shtest_parse_file "$__shtest_file"
@@ -348,26 +349,33 @@ __main_shelltest() {
 			__shtest_global_total_tests=$((__shtest_global_total_tests+__shtest_functions_length))
 		done; unset -v __shtest_file
 
-		if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
-			printf '%s\n' "Running $__shtest_global_total_tests tests"
-		elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
-			printf '%d..%d\n' '1' "$__shtest_global_total_tests"
+		# Total number of ran tests
+		__shtest_global_total_tests=$((__shtest_global_total_tests*SHELLTEST_INTERNAL_SHELLS_TOTAL))
+
+			
+		if [ "$__shtest_arg_first_run" = 'yes' ]; then
+			if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
+				printf '%s\n' "Running $__shtest_global_total_tests tests"
+			elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
+				printf '%d..%d\n' '1' "$__shtest_global_total_tests"
+			fi
 		fi
+
 
 		# Actually execute the tests
 		# TODO: optimize by not running __shtest_parse_file twice (now it runs above and inside of __shtest_run_file)
 		__shtest_global_current_test='1'
-		for __shtest_file in "$__shtest_arg"/*.sh; do
-			SHELLTEST_DIR=$__shtest_arg
+		for __shtest_file in "$__shtest_arg_path"/*.sh; do
+			SHELLTEST_DIR=$__shtest_arg_path
 			SHELLTEST_FILE=$__shtest_file
 			__shtest_run_file "$__shtest_file"
 		done; unset -v __shtest_file
-	elif [ -e "$__shtest_arg" ]; then
-		__shtest_util_die "File '$__shtest_arg' is neither a regular file nor a directory"
+	elif [ -e "$__shtest_arg_path" ]; then
+		__shtest_util_die "File '$__shtest_arg_path' is neither a regular file nor a directory"
 	else
-		__shtest_util_die "File or directory '$__shtest_arg' does not exist"
+		__shtest_util_die "File or directory '$__shtest_arg_path' does not exist"
 	fi
-	unset -v __shtest_arg
+	unset -v __shtest_arg_path
 }
 
 __main_shelltest "$@"

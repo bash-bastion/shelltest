@@ -12,10 +12,10 @@ util_run() {
 		# TODO: send 'USR1' to this process from the child launched below only at the end of
 		# execution. If we don't get the signal it means that the child terminated prematuraly (set -e), and
 		# we can display an error from this side
-		printf '%s\n' "--- $_shell_rel ($_shell_abs) ---"
 		SHELLTEST_INTERNAL_SHELL=$_shell_rel \
 		SHELLTEST_INTERNAL_SHELL_ABS=$_shell_abs \
-		SHELLTEST_INTERNAL_FORMATTER=$_flag_formatter \
+		SHELLTEST_INTERNAL_SHELLS_TOTAL=$_shells_total \
+		SHELLTEST_INTERNAL_FORMATTER=$flag_formatter \
 			"$_shell_abs" "$BASALT_PACKAGE_DIR/pkg/src/libexec/shelltest-runner.sh" "$@"
 	fi
 }
@@ -46,7 +46,7 @@ util_help() {
    shtest [flags] <test-file-or-dir>
 
 Flags:
-   -s, --shells
+   -s, --shells [sh|ash|dash|yash|oil|nash|bash|zsh|ksh|mksh|oksh|loksh]
       Specify shells to test. If omitted, defaults to 'all'
    -f, --formatter
       Choose an output format. Options include 'default' and 'tap'
