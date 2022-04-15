@@ -60,23 +60,29 @@ __main_shelltest() {
 		util_die "Must specify least one file or directory"
 	fi
 
-	printf '%s\n' "$_flag_shells" | while IFS=',' read -r _s; do
-		case $_s in
+	tmp="$_flag_shells"
+	while [ -n "$tmp" ]; do
+		case ${tmp%%,*} in
 			all) ;;
 			sh|ash|dash|yash|oil|nash) ;;
 			bash|zsh) ;;
 			ksh|mksh|oksh|loksh) ;;
-			*) util_die "Shell '$_s' is not supported" ;;
+			*) util_die "Shell '${tmp%%,*}' is not supported" ;;
+		esac
+
+		case $tmp in
+			*,*) tmp=${tmp#*,} ;;
+			*) tmp= ;;
 		esac
 	done
 
 	# posix
 	for _shell_rel in sh ash dash yash oil nash; do
 		if util_should_run "$_flag_shells" "$_shell_rel"; then
-			_shell_abs=$(util_get_abs)
+			_shell_abs=$(util_get_abs "$_shell_rel")
 			util_run "$_arg_dirs"
 		fi
-	done; unset -v _shell_rel
+	done
 
 	# bash, zsh
 	for _shell_rel in bash zsh; do
@@ -84,13 +90,13 @@ __main_shelltest() {
 			_shell_abs=$(util_get_abs "$_shell_rel")
 			util_run "$_arg_dirs"
 		fi
-	done; unset -v _shell_rel
+	done
 
 	# ksh
 	for _shell_rel in ksh mksh oksh loksh; do
 		if util_should_run "$_flag_shells" "$_shell_rel"; then
-			_shell_abs=$(util_get_abs)
+			_shell_abs=$(util_get_abs "$_shell_rel")
 			util_run "$_arg_dirs"
 		fi
-	done; unset -v _shell_rel
+	done
 }

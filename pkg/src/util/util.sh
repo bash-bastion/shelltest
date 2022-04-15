@@ -30,8 +30,7 @@ util_should_run() {
 }
 
 util_get_abs() {
-	unset -v _temp; _temp=
-
+	_temp=
 	if ! _temp=$(command -v "$1"); then
 		# Command not installed
 		return
@@ -40,8 +39,6 @@ util_get_abs() {
 	if ! readlink -f "$_temp"; then
 		_die "Failed to get absolute path of '$1'"
 	fi
-
-	unset -v _temp
 }
 
 util_help() {
