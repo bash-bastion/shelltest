@@ -22,7 +22,7 @@ util_run() {
 
 util_should_run() {
 	case ,$1, in
-		all) return ;;
+		,all,) return ;;
 		*,"$2",*) return
 	esac
 

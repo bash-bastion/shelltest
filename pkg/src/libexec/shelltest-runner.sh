@@ -1,21 +1,32 @@
 # shellcheck shell=sh
 # shellcheck disable=SC1007,SC1090
 
-# @brief shtest: A test runner for POSIX shells
-# @description A test runner
+# @name shelltest
+# @brief A test runner for POSIX-compliant shells
+# @description Utility functions for tests ran with shelltest
 
+# @description Test if a name is a function
+# @arg $1 string Name of function
+# @exitcode 0 If name is a function
+# @exitcode 1 If name is not a function
 t_is_function() {
+	if ! __tmp=$(type "$1" 2>/dev/null); then
+		return 1
+	fi
+
 	# Most shells have a single line 'my_fn is a function'. In Bash,
 	# the rest of the function is printed. In Zsh, it says 'my_fn is
 	# a shell function'
-	case $(type "$1") in
+	case $__tmp in
 		"$1 is a function"*) return 0 ;;
 		"$1 is a shell function"*) return 0 ;;
 	esac
-
+	
 	return 1
 }
 
+# @description Get the version of the current running shell
+# @set REPLY string Version of the current shell
 t_get_version() {
 	unset REPLY; REPLY=
 
@@ -23,15 +34,16 @@ t_get_version() {
 		sh|ash|dash) ;;
 		yash) REPLY=$YASH_VERSION ;;
 		oil) REPLY=$OIL_VERSION ;;
-		nsh) REPLY=$(nsh --version) ;;
+		nash) REPLY=$(nsh --version) ;;
 		bash) REPLY=$BASH_VERSION ;;
 		zsh) REPLY=$ZSH_VERSION ;;
 		ksh|mksh|oksh|loksh) REPLY=$KSH_VERSION ;;
-		posh) REPLY=$POSH_VERSION
+		# TODO: die if no match
 	esac
 }
 
-# @description Run command and print information if failure occurs
+# @description Run command and print arguments if failure occurs
+# @arg $@ string Commands to run
 t_assert() {
 	if "$@"; then :; else
 		printf '\033[41m%s\033[0m\n: %s' "Error" "Execution of command '$*' failed with exitcode $?" >&2
@@ -156,14 +168,14 @@ __shtest_util_exec_fn() {
 		if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
 			printf '\033[0;31m\033[1m ✗ %s\033[0m\n' "$__shtest_function_name ${__shtest_subfunction_name+(in $__shtest_subfunction_name)}"
 			__shtest_print_environment
-			printf '%s\n' "debug: code: $__shtest_function_exitcode"
+			printf '%s\n' "debug: exit code: $__shtest_function_exitcode"
 			printf '%s\n' 'cat <<__STDIN_AND_STDOUT'
 			printf '%s\n' "$__shtest_function_output"
 			printf '%s\n' '____STDIN_AND_STDOUT'
 		elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
 			printf '%s\n' "not ok $__shtest_global_current_test $__shtest_function_name ${__shtest_subfunction_name+(in $__shtest_subfunction_name)}"
 			__shtest_print_environment
-			printf '%s\n' "debug: code: $__shtest_function_exitcode"
+			printf '%s\n' "debug: exit code: $__shtest_function_exitcode"
 			printf '%s\n' '--- OUTPUT ---'
 			printf '%s\n' "$__shtest_function_output"
 			printf '%s\n' '--- END ---'
@@ -175,7 +187,8 @@ __shtest_util_exec_fn() {
 	return "$__shtest_function_exitcode"
 }
 
-
+# @description Runs a file
+# @internal
 __shtest_run_file() {
 	__shtest_filename=$1
 
@@ -252,8 +265,10 @@ __shtest_run_file() {
 	unset -v __shtest_filename
 }
 
+# @description Parses a file
 # @set __shtest_functions_length string
 # @set __shtest_functions string
+# @internal
 __shtest_parse_file() {
 	__shtest_sub_filename=$1
 

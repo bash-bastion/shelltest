@@ -1,7 +1,11 @@
 # shellcheck shell=bash
 
+task.init() {
+	hookah refresh
+}
+
 task.docs() {
-	shdoc < 'pkg/bin/shtest' > 'docs/api.md'
+	shdoc < './pkg/src/libexec/shelltest-runner.sh' > './docs/api.md'
 }
 
 task.test() {
