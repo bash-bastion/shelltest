@@ -93,9 +93,11 @@ __shtest_util_exec_fn() {
 	unset -v __shtest_function_output; __shtest_function_output=
 	unset -v __shtest_function_exitcode; __shtest_function_exitcode=
 
-	__flag_subshell=no
+	__flag_subshell='no'
+	__flag_is_test_function='no'
 	for arg; do case $arg in
-		--subshell) __flag_subshell=yes; if ! shift; then __shtest_util_die 'Failed to shift'; fi
+		--subshell) __flag_subshell=yes; if ! shift; then __shtest_util_die 'Failed to shift'; fi ;;
+		--is-test-function) __flag_is_test_function='yes'; if ! shift; then __shtest_util_die 'Failed to shift'; fi ;;
 	esac done
 
 	__shtest_exec_function_name=$1
@@ -113,13 +115,11 @@ __shtest_util_exec_fn() {
 		else
 			# TODO: Grabbing output should be handeled elsewhere, as the printing is different dependent on either whether a 'setup',
 			# 'setup_file', etc. function is called or a regular 'test_*' function
-			echo before
 			if "$__shtest_exec_function_name"; then
 				__shtest_function_exitcode=$?
 			else
 				__shtest_function_exitcode=$?
 			fi
-			echo after
 		fi
 	else
 		# Don't die in these particular cases as 'setup_file', 'setup', etc. aren't required to be defined
@@ -130,16 +130,24 @@ __shtest_util_exec_fn() {
 
 		return
 	fi
-
 	unset -v __flag_subshell
+	
+	# Print results
 
 	if [ "$__shtest_function_exitcode" -eq 0 ]; then
-		if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
-			printf '\033[0;32m\033[1m ✓ %s\033[0m\n' "$__shtest_function_name"
-		elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
-			printf '%s\n' "ok $__shtest_function_i $__shtest_function_name"
+		if [ "$__flag_is_test_function" = 'yes' ]; then
+			if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
+				printf '\033[0;32m\033[1m ✓ %s\033[0m\n' "$__shtest_function_name"
+			elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
+				printf '%s\n' "ok $__shtest_global_current_test $__shtest_function_name"
+			fi
+		else
+			# Do not print information on success if it is not a "test_*" function
+			:
 		fi
 	else
+		# Always print something if an error occured
+		
 		unset -v __shtest_subfunction_name
 		case $__shtest_exec_function_name in setup_file|setup|teardown|teardown_file)
 			__shtest_subfunction_name=$__shtest_exec_function_name
@@ -153,7 +161,7 @@ __shtest_util_exec_fn() {
 			printf '%s\n' "$__shtest_function_output"
 			printf '%s\n' '____STDIN_AND_STDOUT'
 		elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
-			printf '%s\n' "not ok $__shtest_function_i $__shtest_function_name ${__shtest_subfunction_name+(in $__shtest_subfunction_name)}"
+			printf '%s\n' "not ok $__shtest_global_current_test $__shtest_function_name ${__shtest_subfunction_name+(in $__shtest_subfunction_name)}"
 			__shtest_print_environment
 			printf '%s\n' "debug: code: $__shtest_function_exitcode"
 			printf '%s\n' '--- OUTPUT ---'
@@ -167,48 +175,27 @@ __shtest_util_exec_fn() {
 	return "$__shtest_function_exitcode"
 }
 
+
 __shtest_run_file() {
 	__shtest_filename=$1
 
-	__shtest_functions_length=0
-	__shtest_functions=
-
-	# Parse shell script, adding testing functions to the list
-	while IFS= read -r __shtest_test_function || [ -n "$test_function" ]; do
-		# Functions part of the test suite must have a name that starts with 'test_'
-		case $__shtest_test_function in
-			'test_'*'() {'*) : ;;
-			*) continue ;;
-		esac
-
-		# This works on the assumption that there are no whitespace characters before
-		# the function identifier. Additionally, this strips comments after the function,
-		# which prevents "ignoring comment lines" in cases where tests are like Bats
-		__shtest_test_function="${__shtest_test_function%%"() {"*}"
-
-		# Ignore comment lines
-		case $__shtest_test_function in
-			*'#'*) continue ;;
-			*) : ;;
-		esac
-
-		__shtest_functions_length=$((__shtest_functions_length+1))
-		__shtest_functions="$__shtest_functions$__shtest_test_function:"
-	done < "$__shtest_filename"; unset -v __shtest_test_function
+	__shtest_parse_file "$__shtest_filename"
+	# These variables are now set (ex): (WET)
+	# __shtest_functions_length=2
+	# __shtest_functions="test_fn1|test_fn2|"
 
 	if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
 		printf '\033[0;36m\033[1m%s\033[0m\n' "Running '$__shtest_filename' with $SHELLTEST_INTERNAL_SHELL"
-	elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
-		printf '%d..%d\n' '1' "$__shtest_functions_length"
 	fi
 
 	# Skip if there are no tests
 	if [ "$__shtest_functions_length" -eq 0 ]; then
-		printf '\033[0;33m\033[1m ‐ %s\033[0m\n' "No tests"
+		printf '\033[0;33m\033[1m - %s\033[0m\n' "No tests"
 		printf '\n'
 		return
 	fi
 
+	# Files run in own subshell
 	(
 		. "$__shtest_filename"
 
@@ -217,21 +204,21 @@ __shtest_run_file() {
 			exit 0
 		fi
 
-		__shtest_function_i=1
 		while [ -n "$__shtest_functions" ]; do
-			__shtest_function_name="${__shtest_functions%%:*}"
+			__shtest_function_name=${__shtest_functions%%|*}
 			if [ -z "$__shtest_function_name" ]; then
 				continue
 			fi
 
+			# Tests run in own subshell
 			(
 				if ! __shtest_util_exec_fn 'setup'; then
 					# If setup fails, then don't run the actual 'test_*' function
 					exit 0
 				fi
 
-				if ! SHELLTEST_FUNC=$__shtest_function_name __shtest_util_exec_fn --subshell "$__shtest_function_name"; then
-					# If a test fails, there isn't anything we can do besdies run the teardown. The error has already been printed
+				if ! SHELLTEST_FUNC=$__shtest_function_name __shtest_util_exec_fn --subshell --is-test-function "$__shtest_function_name"; then
+					# If a test fails, there isn't anything we can do besides run the teardown. The error has already been printed
 					:
 				fi
 
@@ -241,20 +228,63 @@ __shtest_run_file() {
 				fi
 			)
 
-			__shtest_function_i=$((__shtest_function_i=__shtest_function_i+1))
-			__shtest_functions=${__shtest_functions#*:}
+			__shtest_global_current_test=$((__shtest_global_current_test+1))
+			__shtest_functions=${__shtest_functions#*|}
 		done
-		unset -v __shtest_function_i
 
 		if ! __shtest_util_exec_fn 'teardown_file'; then
 			# If the teardown fails, there isn't anything we can do. The error has already been printed
 			:
 		fi
-		printf '\n'
 	)
+
+	if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
+		printf '\n'
+	elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
+		:
+	fi
+
+	# Since increments to this variable were done in a subshell, we need to do it again so
+	# its the correct number out of the subshell
+	__shtest_global_current_test=$((__shtest_global_current_test+__shtest_functions_length))
 
 	unset -v __shtest_functions_length __shtest_functions
 	unset -v __shtest_filename
+}
+
+# @set __shtest_functions_length string
+# @set __shtest_functions string
+__shtest_parse_file() {
+	__shtest_sub_filename=$1
+
+	__shtest_functions_length=0
+	__shtest_functions=
+
+	# Parse shell script, adding testing functions to the list
+	while IFS= read -r __shtest_test_function || [ -n "$test_function" ]; do
+		# Functions part of the test suite must have a name that starts with 'test_'
+		case $__shtest_test_function in
+			*'test_'*'()'*'{'*) : ;;
+			*) continue ;;
+		esac
+
+		# Convert the line contaning the function name to just the name of the function. The last two statements
+		# remove leading and trailing whitespaces, which is required
+		__shtest_test_function=${__shtest_test_function%%"()"*"{"*}
+		__shtest_test_function=${__shtest_test_function#"${__shtest_test_function%%[![:space:]]*}"}
+		__shtest_test_function=${__shtest_test_function%"${__shtest_test_function##*[![:space:]]}"}
+
+		# Ignore comment lines
+		case $__shtest_test_function in
+			*'#'*'test_'*) continue ;;
+			*) : ;;
+		esac
+
+		__shtest_functions_length=$((__shtest_functions_length+1))
+		__shtest_functions="$__shtest_functions$__shtest_test_function|"
+	done < "$__shtest_sub_filename"; unset -v __shtest_test_function
+
+	unset -v __shtest_sub_filename
 }
 
 # @description Application entrypoint
@@ -269,13 +299,13 @@ __main_shelltest() {
 	# Run tests for either file or directory
 	__shtest_arg=$1
 	if [ -f "$__shtest_arg" ]; then
-		if ! SHELLTEST_DIR="$(
+		if ! SHELLTEST_DIR=$(
 			if ! CDPATH= cd -P "${__shtest_arg%/*}"; then
 				exit 1
 			fi
 
 			printf '%s' "$PWD"
-		)"; then
+		); then
 			__shtest_util_die "Could not generate absolute path from directory '${__shtest_arg%/*}'"
 		fi
 		SHELLTEST_FILE=__shtest_arg
@@ -284,11 +314,35 @@ __main_shelltest() {
 	elif [ -d "$__shtest_arg" ]; then
 		__shtest_arg=${__shtest_arg%/}
 		__shtest_file=
+
+		if [ -f "$__shtest_arg/*.sh" ]; then
+			__shtest_util_die "Directory '$__shtest_arg' must not contain a file called '*.sh'"
+		fi
+		
+		# Parse all files and get total number of tests
+		__shtest_global_total_tests='0'
 		for __shtest_file in "$__shtest_arg"/*.sh; do
 			if [ "$__shtest_file" = "$__shtest_arg/*.sh" ]; then
 				__shtest_util_die "Directory '$__shtest_arg' does not contain any test files"
 			fi
 
+			__shtest_parse_file "$__shtest_file"
+			# These variables are now set (ex): (WET)
+			# __shtest_functions_length=2
+			# __shtest_functions="test_fn1|test_fn2|"
+			__shtest_global_total_tests=$((__shtest_global_total_tests+__shtest_functions_length))
+		done; unset -v __shtest_file
+
+		if [ "$SHELLTEST_INTERNAL_FORMATTER" = 'default' ]; then
+			printf '%s\n' "Running $__shtest_global_total_tests tests"
+		elif [ "$SHELLTEST_INTERNAL_FORMATTER" = 'tap' ]; then
+			printf '%d..%d\n' '1' "$__shtest_global_total_tests"
+		fi
+
+		# Actually execute the tests
+		# TODO: optimize by not running __shtest_parse_file twice (now it runs above and inside of __shtest_run_file)
+		__shtest_global_current_test='1'
+		for __shtest_file in "$__shtest_arg"/*.sh; do
 			SHELLTEST_DIR=$__shtest_arg
 			SHELLTEST_FILE=$__shtest_file
 			__shtest_run_file "$__shtest_file"
@@ -296,7 +350,7 @@ __main_shelltest() {
 	elif [ -e "$__shtest_arg" ]; then
 		__shtest_util_die "File '$__shtest_arg' is neither a regular file nor a directory"
 	else
-		__shtest_util_die "Path '$__shtest_arg' does not exist"
+		__shtest_util_die "File or directory '$__shtest_arg' does not exist"
 	fi
 	unset -v __shtest_arg
 }

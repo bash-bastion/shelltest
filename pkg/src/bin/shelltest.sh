@@ -3,73 +3,94 @@
 __main_shelltest() {
 	_flag_shells='all'
 	_flag_formatter='default'
+	_arg_dirs=
 
-	for _arg do case $_arg in
+	while [ $# -ne 0 ]; do case $1 in
 	-s|--shells)
-		if ! shift; then _die 'Failed shift'; fi
+		if ! shift; then
+			util_die 'Failed shift'
+		fi
+
 		_flag_shells=$1
-		if ! shift; then _die "A value must be supplied for '--shells'"; fi
-		echo nnn
+		if [ -z "$_flag_shells" ]; then
+			util_die "A value must be supplied for '--shells'"
+		fi
+
+		if ! shift; then
+			util_die 'Failed shift'
+		fi
 		;;
 	-f|--formatter)
-		if ! shift; then _die 'Failed shift'; fi
+		if ! shift; then
+			util_die 'Failed shift'
+		fi
+
 		_flag_formatter=$1
-		if ! shift; then _die "A value must be supplied for '--formatter'"; fi
+		if [ -z "$_flag_formatter" ]; then
+			util_die "A value must be supplied for '--formatter'"
+		fi
+
+		if ! shift; then
+			util_die 'Failed shift'
+		fi
 		;;
 	-h|--help)
-		_help
+		util_help
 		return
 		;;
-	-*) _die 'Flag not recognized' ;;
+	-*) util_die 'Flag not recognized' ;;
 	*)
-		dirs="$dirs:$1"
-		if ! shift; then _die 'Failed shift'; fi
+		if [ -n "$_arg_dirs" ]; then
+			util_die "Cannot supply more than one directory or file"
+		fi
+
+		_arg_dirs="$1"
+		if ! shift; then
+			util_die 'Failed shift'
+		fi
 		;;
-	esac done; unset -v _arg
+	esac done
 
 	if [ "$_flag_formatter" != 'default' ] && [ "$_flag_formatter" != 'tap' ]; then
-		_die "Flag '--formatter' only accepts either 'default' or 'tap'"
+		util_die "Flag '--formatter' only accepts either 'default' or 'tap'"
 	fi
 
-	if [ -z "$dirs" ]; then
-		_help
-		_die "Must specify least one file or directory"
+	if [ -z "$_arg_dirs" ]; then
+		util_help
+		util_die "Must specify least one file or directory"
 	fi
 
-	printf '%s\n' "$_flag_shells" | while IFS=':' read -r _s; do
+	printf '%s\n' "$_flag_shells" | while IFS=',' read -r _s; do
 		case $_s in
 			all) ;;
 			sh|ash|dash|yash|oil|nash) ;;
 			bash|zsh) ;;
 			ksh|mksh|oksh|loksh) ;;
-			*) _die "Shell '$_s' is not supported" ;;
+			*) util_die "Shell '$_s' is not supported" ;;
 		esac
 	done
 
 	# posix
-	for _s in sh ash dash yash oil nash; do
-		if _should_run; then
-			_shell_rel=$_s
-			_shell_abs=$(_get_tabs)
-			_run "$@"
+	for _shell_rel in sh ash dash yash oil nash; do
+		if util_should_run "$_flag_shells" "$_shell_rel"; then
+			_shell_abs=$(util_get_abs)
+			util_run "$_arg_dirs"
 		fi
-	done; unset -v _s
+	done; unset -v _shell_rel
 
 	# bash, zsh
-	for _s in bash zsh; do
-		if _should_run; then
-			_shell_rel=$_s
-			_shell_abs=$(_get_tabs)
-			_run "$@"
+	for _shell_rel in bash zsh; do
+		if util_should_run "$_flag_shells" "$_shell_rel"; then
+			_shell_abs=$(util_get_abs "$_shell_rel")
+			util_run "$_arg_dirs"
 		fi
-	done; unset -v _s
+	done; unset -v _shell_rel
 
 	# ksh
-	for _s in ksh mksh oksh loksh; do
-		if _should_run; then
-			_shell_rel=$_s
-			_shell_abs=$(_get_tabs)
-			_run "$@"
+	for _shell_rel in ksh mksh oksh loksh; do
+		if util_should_run "$_flag_shells" "$_shell_rel"; then
+			_shell_abs=$(util_get_abs)
+			util_run "$_arg_dirs"
 		fi
-	done; unset -v _s
+	done; unset -v _shell_rel
 }

@@ -4,15 +4,15 @@ A test runner for POSIX shells
 
 ## Features
 
-- Conforms to POSIX
-- Uses only builtins
+- POSIX compliant
 - No eval
+- Uses only builtins
 - Perform tests with `[`, etc.
 - TAPS output
 - `setup`, `setup_file`, `teardown`, `teardown_file`
 - Utility functions `t_is_function`, `t_get_shell_version`, `t_assert`
 
-## Tested on...
+## Tested on
 
 - [ ] sh
 - [ ] BusyBox sh
@@ -29,16 +29,6 @@ A test runner for POSIX shells
 - [ ] loksh (Linux port of OpenBSD pdksh)
 - [ ] oksh (General port of OpenBSD pdksh)
 
-## Not supported
-
-- Tcsh/Csh
-- Fish
-- oh
-- ion
-- xonsh
-- elvish
-- abs
-
 More rigorous test suite coming soon...
 
 ## Installation
@@ -52,5 +42,5 @@ basalt global add hyperupcall/shelltest
 ## Usage
 
 ```sh
-$ shelltest ./tests
+shelltest ./tests
 ```
