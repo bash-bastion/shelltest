@@ -193,7 +193,7 @@ __shtest_run_file() {
 	__shtest_filename=$1
 
 	__shtest_parse_file "$__shtest_filename"
-	# These variables are now set (ex): (WET)
+	# These variables are now set (ex): (DUPLICATED)
 	# __shtest_functions_length=2
 	# __shtest_functions="test_fn1|test_fn2|"
 
@@ -343,7 +343,7 @@ __main_shelltest() {
 			fi
 
 			__shtest_parse_file "$__shtest_file"
-			# These variables are now set (ex): (WET)
+			# These variables are now set (ex): (DUPLICATED)
 			# __shtest_functions_length=2
 			# __shtest_functions="test_fn1|test_fn2|"
 			__shtest_global_total_tests=$((__shtest_global_total_tests+__shtest_functions_length))
