@@ -10,7 +10,7 @@ util_run() {
 		printf '%s\n' "Skipping '$_shell_rel' (not installed)"
 	else
 		# TODO: send 'USR1' to this process from the child launched below only at the end of
-		# execution. If we don't get the signal it means that the child terminated prematuraly (set -e), and
+		# execution. If we don't get the signal it means that the child terminated prematurely (set -e), and
 		# we can display an error from this side
 		SHELLTEST_INTERNAL_SHELL=$_shell_rel \
 		SHELLTEST_INTERNAL_SHELL_ABS=$_shell_abs \

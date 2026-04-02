@@ -40,4 +40,3 @@ Run command and print arguments if failure occurs
 #### Arguments
 
 * **...** (string): Commands to run
-

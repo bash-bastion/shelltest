@@ -65,7 +65,7 @@ __shtest_util_internal_error() {
 	printf '\033[41m\033[1m%s\033[0m %s\n' ' Error ' "$1" >&2
 }
 
-# @description Test whether color should be outputed
+# @description Test whether color should be outputted
 # @exitcode 0 if should print color
 # @exitcode 1 if should not print color
 # @internal
@@ -83,7 +83,7 @@ __shtest_util_trap_err_handler() {
 	printf '%s\n' '--- END ---'
 }
 
-# @description Prints handy varaibles from the environment
+# @description Prints handy variables from the environment
 # @internal
 __shtest_print_environment() {
 	for __shtest_variable in PWD LANG LC_ALL; do
@@ -125,7 +125,7 @@ __shtest_util_exec_fn() {
 				__shtest_function_exitcode=$?
 			fi
 		else
-			# TODO: Grabbing output should be handeled elsewhere, as the printing is different dependent on either whether a 'setup',
+			# TODO: Grabbing output should be handled elsewhere, as the printing is different dependent on either whether a 'setup',
 			# 'setup_file', etc. function is called or a regular 'test_*' function
 			if "$__shtest_exec_function_name"; then
 				__shtest_function_exitcode=$?
@@ -158,7 +158,7 @@ __shtest_util_exec_fn() {
 			:
 		fi
 	else
-		# Always print something if an error occured
+		# Always print something if an error occurred
 		
 		unset -v __shtest_subfunction_name
 		case $__shtest_exec_function_name in setup_file|setup|teardown|teardown_file)
@@ -283,7 +283,7 @@ __shtest_parse_file() {
 			*) continue ;;
 		esac
 
-		# Convert the line contaning the function name to just the name of the function. The last two statements
+		# Convert the line containing the function name to just the name of the function. The last two statements
 		# remove leading and trailing whitespaces, which is required
 		__shtest_test_function=${__shtest_test_function%%"()"*"{"*}
 		__shtest_test_function=${__shtest_test_function#"${__shtest_test_function%%[![:space:]]*}"}
